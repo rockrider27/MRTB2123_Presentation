@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopee — Business Analytics | MRTB2123</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --navy:#0B1F3A;--navy2:#112240;--gold:#C8963E;--white:#fff;
+    --dim:#8899AA;--light:#E8EDF2;--accent:#1D6FA4;
+  }
+  body{font-family:-apple-system,'Segoe UI',sans-serif;background:var(--navy);color:var(--white);height:100vh;overflow:hidden;user-select:none}
+  .deck{position:relative;width:100%;height:100vh}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:56px 72px;opacity:0;transition:opacity .3s}
+  .slide.active{display:flex;opacity:1}
+
+  /* ── layout helpers ── */
+  .center{justify-content:center;align-items:center;text-align:center}
+  .col{flex-direction:column}
+  .row{flex-direction:row;gap:32px}
+  .grow{flex:1}
+  .gap{gap:20px}
+
+  /* ── typography ── */
+  .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  h1{font-size:42px;font-weight:700;line-height:1.15;letter-spacing:-.02em}
+  h2{font-size:28px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
+  h3{font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--gold)}
+  p,li{font-size:14px;line-height:1.65;color:var(--light)}
+  ul{padding-left:18px}
+  li{margin-bottom:4px}
+  .dim{color:var(--dim);font-size:12px}
+  .big{font-size:40px;font-weight:700;color:var(--gold);line-height:1}
+  .rule{width:40px;height:3px;background:var(--gold);margin:14px 0}
+
+  /* ── divider line ── */
+  .divider{width:100%;height:1px;background:rgba(255,255,255,.1);margin:18px 0}
+
+  /* ── cards ── */
+  .cards{display:grid;gap:16px}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c4{grid-template-columns:repeat(4,1fr)}
+  .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:20px 18px}
+  .card .n{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.1em;margin-bottom:8px}
+  .card h3{font-size:13px;margin-bottom:8px}
+  .card p{font-size:13px;color:rgba(232,237,242,.8)}
+
+  /* ── table ── */
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;padding:9px 12px;background:rgba(200,150,62,.15);color:var(--gold);font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--light);vertical-align:top}
+  tr:last-child td{border:none}
+  td.good{color:#5BBA8F}
+  td.mid{color:#E0A930}
+  td.weak{color:#E05555}
+
+  /* ── phases ── */
+  .phases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .phase{border-left:3px solid var(--gold);padding:14px 18px;background:rgba(255,255,255,.04);border-radius:0 6px 6px 0}
+  .phase .label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+  .phase h3{font-size:14px;margin-bottom:10px;text-transform:none;letter-spacing:0;color:var(--white)}
+  .phase li{font-size:12.5px;color:var(--light);margin-bottom:5px}
+  .phase .kpi{margin-top:10px;font-size:11px;color:var(--gold);font-weight:600}
+
+  /* ── layers ── */
+  .layers{display:flex;flex-direction:column;gap:10px}
+  .layer{display:flex;gap:16px;align-items:flex-start;background:rgba(255,255,255,.04);border-radius:6px;padding:14px 16px}
+  .layer .badge{min-width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--gold);color:var(--navy);flex-shrink:0}
+  .layer .body h3{font-size:13px;margin-bottom:4px;text-transform:none;letter-spacing:0;color:var(--white)}
+  .layer .body p{font-size:12.5px}
+
+  /* ── kpi row ── */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:8px}
+  .kpi-box{text-align:center;padding:20px 12px;background:rgba(200,150,62,.08);border:1px solid rgba(200,150,62,.2);border-radius:6px}
+  .kpi-box .big{font-size:32px}
+  .kpi-box p{font-size:11px;color:var(--dim);margin-top:6px}
+
+  /* ── loop diagram ── */
+  .loop{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .loop-item{padding:14px 16px;border-radius:6px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+  .loop-item .n{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.1em;margin-bottom:4px}
+  .loop-item p{font-size:12.5px}
+
+  /* ── nav ── */
+  nav{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:16px;z-index:99}
+  .btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--white);padding:8px 20px;border-radius:4px;cursor:pointer;font-size:12px;letter-spacing:.06em;transition:background .2s}
+  .btn:hover{background:rgba(255,255,255,.16)}
+  #counter{font-size:11px;color:var(--dim);min-width:52px;text-align:center;letter-spacing:.08em}
+
+  /* ── footer ── */
+  .footer{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)}
+  .footer span{font-size:10.5px;color:var(--dim);letter-spacing:.06em}
+
+  /* ── title slide specifics ── */
+  .slide-title{background:linear-gradient(135deg,#0B1F3A 60%,#0F2D52)}
+  .slide-title h1{font-size:38px;max-width:660px}
+  .team{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+  .tag{font-size:11px;padding:4px 12px;border:1px solid rgba(200,150,62,.4);border-radius:20px;color:var(--gold)}
+
+  /* ── conclusion ── */
+  .conclusion-quote{font-size:26px;font-weight:300;line-height:1.4;max-width:700px;border-left:4px solid var(--gold);padding-left:28px;margin:24px 0}
+  .pts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .pt{padding:14px 18px;background:rgba(255,255,255,.04);border-radius:6px;font-size:13px;color:var(--light)}
+  .pt strong{display:block;color:var(--white);margin-bottom:4px;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- 01 TITLE -->
+  <div class="slide slide-title center col active">
+    <div class="eyebrow">MRTB2123 Business Analytics · Case Study 1</div>
+    <h1>Shopee: Strengthening Customer Intelligence and Marketing Optimisation</h1>
+    <div class="rule"></div>
+    <p style="color:var(--dim);font-size:13px;max-width:560px">Consulting report on transforming fragmented data into actionable intelligence across 7 SEA markets</p>
+    <div class="team">
+      <span class="tag">Umar Syukri · MRT254044</span>
+      <span class="tag">Soo Wai San · MRT254005</span>
+      <span class="tag">Nur Aisyah · MRT254043</span>
+      <span class="tag">Rosmaili · MRT254015</span>
+      <span class="tag">Erwan Fadly · MRT254011</span>
+    </div>
+    <p class="dim" style="margin-top:28px">Supervisor: Assoc. Prof Ts Dr Nur Azaliah bt Abu Bakar &nbsp;·&nbsp; UTM</p>
+  </div>
+
+  <!-- 02 EXECUTIVE SUMMARY -->
+  <div class="slide col">
+    <div class="eyebrow">Executive Summary</div>
+    <h2>From Data-Rich to Intelligence-Led</h2>
+    <div class="rule"></div>
+    <div class="cards c2 grow">
+      <div class="card"><div class="n">01 · PROBLEM</div><h3>Compounding Structural Gaps</h3><p>GMV growing but margins declining. Four gaps — data fragmentation, descriptive-only analytics, weak segmentation, poor recommendations — form a self-reinforcing feedback loop.</p></div>
+      <div class="card"><div class="n">02 · DIAGNOSIS</div><h3>Analytically Immature</h3><p>Each limitation reinforces the others, locking Shopee at the descriptive stage of the Analytics Maturity Model — behind AI-native competitors.</p></div>
+      <div class="card"><div class="n">03 · FRAMEWORK</div><h3>Four-Layer Architecture</h3><p>CDP foundation → behavioural descriptive → predictive (clustering, churn, CLV) → prescriptive (hybrid recommendations, next-best-action optimisation).</p></div>
+      <div class="card"><div class="n">04 · STRATEGY</div><h3>Phased Hybrid Approach</h3><p>Mass + personalised marketing, rule-based + AI systems, CLV-led retention. Three-phase roadmap targeting CLV:CAC ratio exceeding 3:1.</p></div>
+    </div>
+    <div class="footer"><span>MRTB2123 · Shopee Case Study</span><span>Executive Summary</span></div>
+  </div>
+
+  <!-- 03 PROBLEM -->
+  <div class="slide col">
+    <div class="eyebrow">Section 1 · Problem Understanding</div>
+    <h2>Business Context & Central Challenge</h2>
+    <div class="rule"></div>
+    <div style="display:flex;gap:32px;flex:1">
+      <div style="flex:1">
+        <h3 style="margin-bottom:12px">Business Context</h3>
+        <ul>
+          <li>Dominant e-commerce across 7 SEA markets</li>
+          <li>GMV and active users growing strongly</li>
+          <li>Operating margins under persistent pressure</li>
+          <li>Rising CAC and escalating promotional spend</li>
+          <li>AI-native competitors reshaping landscape (TikTok Shop, Lazada)</li>
+        </ul>
+        <div class="divider"></div>
+        <h3 style="margin-bottom:10px">Central Challenge</h3>
+        <p style="font-size:13px;color:var(--white);font-style:italic;line-height:1.7">"How can Shopee design and implement an integrated business analytics strategy that transforms fragmented data into actionable intelligence?"</p>
+      </div>
+      <div style="flex:1">
+        <h3 style="margin-bottom:12px">Symptom vs Systemic Cause</h3>
+        <table>
+          <tr><th>Symptom</th><th>Root Cause</th></tr>
+          <tr><td>High churn, declining retention</td><td>No churn prediction, weak segmentation</td></tr>
+          <tr><td>Rising CAC, declining ROMI</td><td>Descriptive-only analytics</td></tr>
+          <tr><td>Generic campaigns, low CTR</td><td>Fragmented customer profiles</td></tr>
+          <tr><td>Margin erosion from over-discounting</td><td>Cannot distinguish customer types</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="footer"><span>MRTB2123 · Shopee Case Study</span><span>Section 1 · Problem</span></div>
+  </div>
+
+  <!-- 04 DIAGNOSIS -->
+  <div class="slide col">
+    <div class="eyebrow">Section 2 · Analytical Diagnosis</div>
+    <h2>Four Structural Limitations</h2>
+    <div class="rule"></div>
+    <div class="cards c2 grow">
+      <div class="card"><div class="n">01</div><h3>Data Fragmentation</h3><p>No unified customer ID. Data distributed across disconnected systems. Prevents 360° profiling — degrades all downstream analytics.</p></div>
+      <div class="card"><div class="n">02</div><h3>Descriptive Analytics Only</h3><p>Anchored at "what happened" dashboards. No predictive churn models or CLV estimation. Decisions are reactive, not proactive.</p></div>
+      <div class="card"><div class="n">03</div><h3>Weak Behavioural Segmentation</h3><p>Segments defined by GMV or login frequency only. Cannot distinguish promotion-dependent from brand-loyal customers.</p></div>
+      <div class="card"><div class="n">04</div><h3>Weak Recommendation System</h3><p>Rule-based logic and historical data only. Repetitive suggestions. Forgoes the data network effect that TikTok Shop exploits.</p></div>
+    </div>
+    <div style="background:rgba(200,150,62,.08);border:1px solid rgba(200,150,62,.2);border-radius:6px;padding:14px 18px;margin-top:16px">
+      <p style="font-size:12.5px;color:var(--light)"><strong style="color:var(--gold)">Vicious Cycle:</strong> Data fragmentation degrades segmentation → poor segmentation makes predictions unreliable → organisation reverts to descriptive-only → weak recommendations starve the analytical layers of signal.</p>
+    </div>
+    <div class="footer"><span>MRTB2123 · Shopee Case Study</span><span>Section 2 · Diagnosis</span></div>
+  </div>
+
+  <!-- 05 FRAMEWORK OVERVIEW -->
+  <div class="slide col">
+    <div class="eyebrow">Section 3 · Analytics Framework</div>
+    <h2>Four-Layer Architecture</h2>
+    <div class="rule"></div>
+    <div class="layers grow">
+      <div class="layer"><div class="badge">L1</div><div class="body"><h3>Foundation — Unified Customer Data Platform</h3><p>Single persistent customer ID unifying transactional, browsing, campaign, and demographic data. Real-time segmentation. Prerequisite for every layer above.</p></div></div>
+      <div class="layer"><div class="badge">L2</div><div class="body"><h3>Descriptive — Behavioural Metric Dashboards</h3><p>Individual-level signals: browse-to-purchase ratio, discount-redemption rate, category dwell time, cart-abandonment frequency, session recency.</p></div></div>
+      <div class="layer"><div class="badge">L3</div><div class="body"><h3>Predictive — Clustering · Churn · CLV</h3><p>K-Means behavioural segmentation · XGBoost/LightGBM churn scoring · BG/NBD + Gamma-Gamma CLV estimation per customer and segment.</p></div></div>
+      <div class="layer"><div class="badge">L4</div><div class="body"><h3>Prescriptive — Hybrid Recommendations + Next-Best-Action</h3><p>Collaborative + content-based + real-time signals + serendipity injection. Next-best-action determines personalised treatment per segment.</p></div></div>
+    </div>
+    <div class="footer"><span>MRTB2123 · Shopee Case Study</span><span>Section 3 · Framework</span></div>
+  </div>
+
+  <!-- 06 PREDICTIVE + PRESCRIPTIVE DETAIL -->
+  <div class="slide col">
+    <div class="eyebrow">Section 3 · L3 & L4 Detail</div>
+    <h2>Predictive & Prescriptive Layers</h2>
+    <div class="rule"></div>
+    <div style="display:flex;gap:24px;flex:1">
+      <div style="flex:1">
+        <h3 style="margin-bottom:12px">L3 · Predictive Techniques</h3>
+        <table>
+          <tr><th>Technique</th><th>Method</th></tr>
+          <tr><td>Behavioural Segmentation</td><td>K-Means / Extended RFM</td></tr>
+          <tr><td>Churn Prediction</td><td>XGBoost / LightGBM</td></tr>
+          <tr><td>CLV Estimation</td><td>BG/NBD + Gamma-Gamma</td></tr>
+        </table>
+      </div>
+      <div style="flex:1.4">
+        <h3 style="margin-bottom:12px">L4 · Next-Best-Action by Segment</h3>
+        <table>
+          <tr><th>Segment</th><th>Signal</th><th>Action</th></tr>
+          <tr><td>Promotion-Dependent</td><td>High churn · Moderate CLV</td><td>Time-limited voucher</td></tr>
+          <tr><td>Brand-Loyal</td><td>Low churn · High CLV</td><td class="good">No discount</td></tr>
+          <tr><td>High-Intent Browser</td><td>Pre-conversion · High CLV</td><td>Personalised rec</td></tr>
+        </table>
+        <div class="divider"></div>
+        <h3 style="margin-bottom:10px">Recommendation Engine Components</h3>
+        <ul>
+          <li>Collaborative filtering — similar user behavioural profiles</li>
+          <li>Content-based filtering — category & attribute match</li>
+          <li>Real-time signals — current browsing session</li>
+          <li>Serendipity injection — prevents filter bubble formation</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>MRTB2123 · Shopee Case Study</span><span>Section 3 · L3 & L4</span></div>
+  </div>
+
+  <!-- 07 STRATEGIC EVALUATION -->
+  <div class="slide col">
+    <div class="eyebrow">Section 4 · Strategic Evaluation</div>
+    <h2>Three Strategic Pairs</h2>
+    <div class="rule"></div>
+    <table style="flex:1">
+      <tr><th>Strategy</th><th>Scalability</th><th>Cost-Effectiveness</th><th>Ethical Risk</th><th>Competitive Position</th></tr>
+      <tr><td>Mass Marketing</td><td>High</td><td class="weak">Low</td><td class="good">Low</td><td class="weak">Weak</td></tr>
+      <tr><td><strong style="color:var(--gold)">✓ Personalised Marketing</strong></td><td class="good">High (ML)</td><td class="good">High</td><td class="mid">Moderate</td><td class="good">Strong</td></tr>
+      <tr><td>Rule-Based Systems</td><td class="weak">Low</td><td class="mid">Moderate</td><td class="good">Low</td><td class="weak">Weak</td></tr>
+      <tr><td><strong style="color:var(--gold)">✓ AI-Driven Systems</strong></td><td class="good">Very High</td><td class="good">High</td><td class="weak">High</td><td class="good">Essential</td></tr>
+      <tr><td>Promotion-Led Acquisition</td><td>High</td><td class="weak">Low</td><td class="good">Low</td><td class="weak">Declining</td></tr>
+      <tr><td><strong style="color:var(--gold)">✓ CLV-Led Retention</strong></td><td class="good">High (ML)</td><td class="good">High</td><td class="mid">Moderate</td><td class="good">Sustainable</td></tr>
+    </table>
+    <div class="footer"><span>MRTB2123 · Shopee Case Study</span><span>Section 4 · Strategy</span></div>
+  </div>
+
+  <!-- 08 ROADMAP -->
+  <div class="slide col">
+    <div class="eyebrow">Section 4 · Recommendation</div>
+    <h2>Phased Hybrid Roadmap</h2>
+    <div class="rule"></div>
+    <div class="phases grow">
+      <div class="phase">
+        <div class="label">Phase 1 · Months 1–6</div>
+        <h3>Foundation</h3>
+        <ul>
+          <li>CDP implementation</li>
+          <li>Improved rule-based segmentation</li>
+          <li>Mass marketing retained for 11.11 / 12.12</li>
+        </ul>
+        <div class="kpi">KPI: Data Quality Score</div>
+      </div>
+      <div class="phase">
+        <div class="label">Phase 2 · Months 6–18</div>
+        <h3>Personalisation</h3>
+        <ul>
+          <li>ML personalisation deployment</li>
+          <li>CLV modelling and segmentation</li>
+          <li>Hybrid rule-based + AI architecture</li>
+          <li>PDPA compliance framework</li>
+        </ul>
+        <div class="kpi">KPI: CLV:CAC > 2:1</div>
+      </div>
+      <div class="phase">
+        <div class="label">Phase 3 · Months 18–36</div>
+        <h3>Responsible AI</h3>
+        <ul>
+          <li>Explainability modules</li>
+          <li>Quarterly bias auditing</li>
+          <li>Serendipity injection algorithms</li>
+          <li>Personalisation Transparency Dashboard</li>
+        </ul>
+        <div class="kpi">KPI: CLV:CAC > 3:1</div>
+      </div>
+    </div>
+    <div class="footer"><span>MRTB2123 · Shopee Case Study</span><span>Section 4 · Roadmap</span></div>
+  </div>
+
+  <!-- 09 IMPACT -->
+  <div class="slide col">
+    <div class="eyebrow">Section 5 · Solution & Implementation</div>
+    <h2>Expected Business Impact</h2>
+    <div class="rule"></div>
+    <div class="kpis">
+      <div class="kpi-box"><div class="big">&gt;3:1</div><p>CLV:CAC Ratio<br>Phase 3 Target</p></div>
+      <div class="kpi-box"><div class="big">2–5×</div><p>Conversion Rate<br>Improvement</p></div>
+      <div class="kpi-box"><div class="big">35%</div><p>Revenue via<br>Personalisation</p></div>
+      <div class="kpi-box"><div class="big">36mo</div><p>Full Roadmap<br>Timeline</p></div>
+    </div>
+    <div class="cards c2" style="margin-top:16px">
+      <div class="card"><h3>Marketing Efficiency</h3><p>Reduced duplicated targeting · Improved campaign attribution · Segment-specific messaging · Elimination of over-discounting to brand-loyal users</p></div>
+      <div class="card"><h3>Platform Competitiveness</h3><p>Personalisation quality closing gap with TikTok Shop · Data network effect compounds with growth · Shift from promotion-led to intelligence-led strategy</p></div>
+    </div>
+    <div class="footer"><span>MRTB2123 · Shopee Case Study</span><span>Section 5 · Impact</span></div>
+  </div>
+
+  <!-- 10 CONCLUSION -->
+  <div class="slide col">
+    <div class="eyebrow">Conclusion</div>
+    <h2>The Competitive Advantage is Not Data. It is Decision Quality.</h2>
+    <div class="rule"></div>
+    <div class="pts grow">
+      <div class="pt"><strong>01 · Analytics-Maturity Problem</strong>Shopee's challenge is structural, not budgetary. Symptom-level interventions are self-defeating without addressing the four root causes.</div>
+      <div class="pt"><strong>02 · Virtuous Cycle</strong>The four-layer framework inverts the compounding feedback loop — better data → better segments → better intelligence → better decisions.</div>
+      <div class="pt"><strong>03 · Aligned Strategy</strong>CDP enables personalisation → personalisation enables CLV-led retention → CLV-led retention enables margin sustainability.</div>
+      <div class="pt"><strong>04 · Responsible AI as Differentiator</strong>Governance is not a compliance cost — it builds the consumer trust that sustains long-term platform growth across 7 SEA markets.</div>
+    </div>
+    <div class="footer"><span>MRTB2123 · Shopee Case Study</span><span>UTM · Assoc. Prof Ts Dr Nur Azaliah</span></div>
+  </div>
+
+</div>
+
+<nav>
+  <button class="btn" onclick="go(-1)">← PREV</button>
+  <span id="counter">1 / 10</span>
+  <button class="btn" onclick="go(1)">NEXT →</button>
+</nav>
+
+<script>
+  const slides=document.querySelectorAll('.slide');
+  let cur=0;
+  function go(d){
+    slides[cur].classList.remove('active');
+    cur=(cur+d+slides.length)%slides.length;
+    slides[cur].classList.add('active');
+    document.getElementById('counter').textContent=(cur+1)+' / '+slides.length;
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);
+  });
+</script>
+</body>
+</html>
